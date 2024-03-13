@@ -1,4 +1,19 @@
 const { City, Distance, FlightTime } = require('../../models/models'); 
+const { getIntentFromMessage } = require('./intentService');
+const { OpenAI } = require('openai');
+const dotenv = require('dotenv');
+
+dotenv.config();
+
+// Verify that the API key is set
+if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set in the environment variables.');
+  }
+
+// Initialize OpenAI API client with the API key
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 
 /**
  * Interprets a natural language query and translates it to an SQL query to fetch data from the database.
@@ -7,7 +22,7 @@ const { City, Distance, FlightTime } = require('../../models/models');
  */
 async function nlQueryToSqlEngine(message) {
     // Determine the intent of the message
-    const intent = getIntentFromMessage(message);
+    const intent = await getIntentFromMessage(message);
     // Extract entities based on the recognized intent
     const entities = extractEntitiesFromMessage(message, intent);
 
@@ -17,19 +32,9 @@ async function nlQueryToSqlEngine(message) {
             return await queryDistance(entities);
         case 'find_flight_time':
             return await queryFlightTime(entities);
-        default:
+        case 'unknow':
             return "I'm not sure how to help with that.";
     }
-}
-
-function getIntentFromMessage(message) {
-    // Placeholder - in reality, use NLP techniques or keyword matching
-    if (message.toLowerCase().includes('how far is')) {
-        return 'find_distance';
-    } else if (message.toLowerCase().includes('flight time')) {
-        return 'find_flight_time';
-    }
-    return 'unknown';
 }
 
 function extractEntitiesFromMessage(message, intent) {
