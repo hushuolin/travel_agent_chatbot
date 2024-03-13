@@ -2,6 +2,9 @@ const { handleQueryWithChatGPT } = require('../services/chatService');
 const { nlQueryToSqlEngine } = require('../services/nlQueryToSqlEngine');
 const { getIntentFromMessage } = require('../services/intentService');
 
+let message = "How far is between city Bristol and city Corvallis"
+
+
 exports.handleMessage = async (req, res) => {
     const { message } = req.body;
 
@@ -10,7 +13,7 @@ exports.handleMessage = async (req, res) => {
         let response;
 
         // Now this is an async call
-        const handleWithDatabase = await shouldHandleWithDatabase(message);
+        const handleWithDatabase = shouldHandleWithDatabase(message);
 
         // Condition to decide if the message should be handled by the database
         if (handleWithDatabase) {
@@ -36,3 +39,16 @@ async function shouldHandleWithDatabase(message) {
     const intent = await getIntentFromMessage(message);
     return ['find_distance', 'find_flight_time'].includes(intent);
 }
+
+
+// This is the modified part
+async function main() {
+    try {
+        const intentResponse = await getIntentFromMessage(message);
+        console.log(intentResponse);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+main();
