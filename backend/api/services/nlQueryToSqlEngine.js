@@ -24,9 +24,9 @@ async function nlQueryToSqlEngine(message) {
 
 function getIntentFromMessage(message) {
     // Placeholder - in reality, use NLP techniques or keyword matching
-    if (message.includes('how far is')) {
+    if (message.toLowerCase().includes('how far is')) {
         return 'find_distance';
-    } else if (message.includes('flight time')) {
+    } else if (message.toLowerCase().includes('flight time')) {
         return 'find_flight_time';
     }
     return 'unknown';
@@ -34,29 +34,46 @@ function getIntentFromMessage(message) {
 
 function extractEntitiesFromMessage(message, intent) {
     // Placeholder - in reality, use NLP techniques for entity recognition
-    const words = message.split(' ');
-    const entities = {
-        sourceCity: words[words.length - 3],
-        destinationCity: words[words.length - 1]
-    };
-    return entities;
+    const pattern = /(?:how far is|flight time (?:between|from))? (\w+) (?:and|to) (\w+)/i;
+    const match = message.toLowerCase().match(pattern);
+
+    if (match) {
+        return { 
+            sourceCityName: match[1],
+            destinationCityName: match[2]
+        };
+    } else {
+        return { 
+            sourceCityName: null, 
+            destinationCityName: null 
+        };
+    }
 }
 
-async function queryDistance({ sourceCity, destinationCity }) {
-    // Here you would implement your logic to query the database for the distance
-    // using the ORM that interacts with your Distance model
-    // This is a simplified example
+async function queryDistance({ sourceCityName, destinationCityName }) {
     try {
+        // First, find the city IDs from the city names
+        const [sourceCity, destinationCity] = await Promise.all([
+            City.findOne({ where: { name: sourceCityName } }),
+            City.findOne({ where: { name: destinationCityName } })
+        ]);    
+
+        if (!sourceCity || !destinationCity) {
+            return `City information not found for ${sourceCityName} or ${destinationCityName}.`;
+        }    
+
+        // Then, use the IDs to find the distance
         const distance = await Distance.findOne({
             where: {
-                sourceCity,
-                destinationCity
+                sourceCityId: sourceCity.id,
+                destinationCityId: destinationCity.id
             }
         });
+
         if (distance) {
-            return `The distance from ${sourceCity} to ${destinationCity} is ${distance.value} kilometers.`;
+            return `The distance from ${sourceCityName} to ${destinationCityName} is ${distance.distanceValue} kilometers.`;
         } else {
-            return `Distance information not found for ${sourceCity} to ${destinationCity}.`;
+            return `Distance information not found for ${sourceCityName} to ${destinationCityName}.`;
         }
     } catch (error) {
         console.error('Failed to query distance:', error);
@@ -64,26 +81,36 @@ async function queryDistance({ sourceCity, destinationCity }) {
     }
 }
 
-async function queryFlightTime({ sourceCity, destinationCity }) {
-    // Similar to queryDistance, you would implement your logic to query the
-    // database for flight time using the ORM that interacts with your FlightTime model
-    // Again, this is a simplified example
+async function queryFlightTime({ sourceCityName, destinationCityName }) {
     try {
+        // First, find the city IDs from the city names
+        const [sourceCity, destinationCity] = await Promise.all([
+            City.findOne({ where: { name: sourceCityName } }),
+            City.findOne({ where: { name: destinationCityName } })
+        ]);    
+
+        if (!sourceCity || !destinationCity) {
+            return `City information not found for ${sourceCityName} or ${destinationCityName}.`;
+        }    
+
+        // Then, use the IDs to find the distance
         const flightTime = await FlightTime.findOne({
             where: {
-                sourceCity,
-                destinationCity
+                sourceCityId: sourceCity.id,
+                destinationCityId: destinationCity.id
             }
         });
+    
         if (flightTime) {
-            return `The flight time from ${sourceCity} to ${destinationCity} is approximately ${flightTime.flightTimeHours} hours.`;
+            return `The flight time from ${sourceCityName} to ${destinationCityName} is approximately ${flightTime.flightTimeHours} hours.`;
         } else {
-            return `Flight time information not found for ${sourceCity} to ${destinationCity}.`;
+            return `Flight time information not found for ${sourceCityName} to ${destinationCityName}.`;
         }
     } catch (error) {
         console.error('Failed to query flight time:', error);
         throw new Error('Error while querying the database.');
     }
 }
+
 
 module.exports = { nlQueryToSqlEngine };

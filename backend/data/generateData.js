@@ -3,7 +3,7 @@ const faker = require('faker');
 const sequelize = require('../config/sequelize');
 
 async function createCities() {
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
         await City.create({
             name: faker.address.city()
         });
@@ -12,29 +12,39 @@ async function createCities() {
 
 async function createDistances() {
     const cities = await City.findAll();
-    for (let i = 0; i < 1000; i++) {
-        const sourceCity = faker.random.arrayElement(cities);
-        let destinationCity = faker.random.arrayElement(cities.filter(city => city.id !== sourceCity.id));
-        
-        await Distance.create({
-            sourceCityId: sourceCity.id,
-            destinationCityId: destinationCity.id,
-            distanceValue: faker.datatype.number({ min: 100, max: 1000 })
-        });
+    // Iterate through each city
+    for (let i = 0; i < cities.length; i++) {
+        // Create distance entries for each other city
+        for (let j = 0; j < cities.length; j++) {
+            if (i !== j) { // Ensure not the same city
+                await Distance.create({
+                    sourceCityId: cities[i].id,
+                    sourceCityName: cities[i].name,
+                    destinationCityId: cities[j].id,
+                    destinationCityName: cities[j].name,
+                    distanceValue: faker.datatype.number({ min: 100, max: 1000 })
+                });
+            }
+        }
     }
 }
 
 async function createFlightTimes() {
     const cities = await City.findAll();
-    for (let i = 0; i < 1000; i++) {
-        const sourceCity = faker.random.arrayElement(cities);
-        let destinationCity = faker.random.arrayElement(cities.filter(city => city.id !== sourceCity.id));
-
-        await FlightTime.create({
-            sourceCityId: sourceCity.id,
-            destinationCityId: destinationCity.id,
-            flightTimeHours: faker.datatype.number({ min: 1, max: 20 }) // assuming flight times range from 1 to 20 hours
-        });
+    // Iterate through each city
+    for (let i = 0; i < cities.length; i++) {
+        // Create flight time entries for each other city
+        for (let j = 0; j < cities.length; j++) {
+            if (i !== j) { // Ensure not the same city
+                await FlightTime.create({
+                    sourceCityId: cities[i].id,
+                    sourceCityName: cities[i].name,
+                    destinationCityId: cities[j].id,
+                    destinationCityName: cities[j].name,
+                    flightTimeHours: faker.datatype.number({ min: 1, max: 20 })
+                });
+            }
+        }
     }
 }
 

@@ -30,5 +30,5 @@ exports.handleMessage = async (req, res) => {
  * @returns {boolean} - True if the message should be handled by the database; otherwise, false.
  */
 function shouldHandleWithDatabase(message) {
-    return message.toLowerCase().includes('distance') || message.toLowerCase().includes('flight time');
+    return message.toLowerCase().includes('how far is') || message.toLowerCase().includes('flight time');
 }
