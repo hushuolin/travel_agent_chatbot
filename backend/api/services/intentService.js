@@ -16,7 +16,7 @@ const openai = new OpenAI({
 async function getIntentFromMessage(message) {
     try {
         const response = await openai.completions.create({
-            model: "gpt-3.5-turbo-instruct", // Or "gpt-3.5-turbo-instruct", adjust as needed
+            model: "gpt-3.5-turbo-instruct", 
             prompt: `Classify the intent of the traveler message: "${message}". 
             - If the message is asking for the distance between two cities, reply with 'find_distance'. 
             - If the message is asking about the time it takes to travel (flight time) between two cities, reply with 'find_flight_time'. 

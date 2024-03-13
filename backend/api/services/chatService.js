@@ -21,7 +21,7 @@ const openai = new OpenAI({
 async function handleQueryWithChatGPT(message) {
   try {
     const response = await openai.completions.create({
-      model: "gpt-3.5-turbo-instruct", // Choose a different model based on your needs
+      model: "gpt-3.5-turbo-instruct", 
       prompt: message,
       temperature: 0.5, // Adjust for creativity. Lower is more deterministic.
       max_tokens: 150, // Adjust based on the expected length of the response
